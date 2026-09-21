@@ -8,12 +8,12 @@
 // ─────────────────────────────────────────────────────────────
 
 const firebaseConfig = {
-  apiKey: "여기에_붙여넣기",
-  authDomain: "여기에_붙여넣기",
-  projectId: "여기에_붙여넣기",
-  storageBucket: "여기에_붙여넣기",
-  messagingSenderId: "여기에_붙여넣기",
-  appId: "여기에_붙여넣기"
+  apiKey: "AIzaSyDOJahmAwn1DoJAjz38sBJBsLI2ecSF2kI",
+  authDomain: "our-home-20f03.firebaseapp.com",
+  projectId: "our-home-20f03",
+  storageBucket: "our-home-20f03.firebasestorage.app",
+  messagingSenderId: "518528263504",
+  appId: "1:518528263504:web:fa89553c23cebb17b03855"
 };
 
 // ↓ 이 줄은 지우지 마세요
