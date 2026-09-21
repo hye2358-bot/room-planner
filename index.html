@@ -152,7 +152,7 @@ kbd{font-family:'IBM Plex Mono',monospace;font-size:.76rem;border:1px solid var(
 const ROOMS=[
  {id:'master',name:'안방',tone:'--t-lilac',h:235,
   pts:[[22,1240],[341,1240],[341,900],[46,900],[22,946]]},
- {id:'living',name:'거실 · 부엌',tone:'--t-blue',h:235,
+ {id:'living',name:'거실 · 부엌',tone:'--t-blue',h:235,joins:['entry'],
   pts:[[132,596],[564,596],[564,487],[704,487],[704,816],[603,816],[603,900],[132,900]]},
  {id:'small2',name:'작은방',tone:'--t-sage',h:235,
   pts:[[331,376],[565,376],[565,130],[348,130],[331,168]]},
@@ -162,7 +162,7 @@ const ROOMS=[
   pts:[[564,294],[704,294],[704,487],[564,487]]},
  {id:'hall',name:'복도',tone:'--t-blue',h:235,
   pts:[[475,376],[565,376],[565,595],[475,595]]},
- {id:'entry',name:'현관',tone:'--t-slate',h:235,
+ {id:'entry',name:'현관',tone:'--t-slate',h:235,joins:['living'],
   pts:[[603,816],[704,816],[704,900],[603,900]]},
  {id:'kbal',name:'부엌 베란다',tone:'--t-stone',h:225,
   pts:[[117,730],[133,730],[133,900],[45,900],[45,823]]},
@@ -189,10 +189,10 @@ const OPEN=[
 
 /* 붙박이·고정물 */
 const FIX=[
- {room:'living',name:'냉장고 자리',pts:[[360,596],[475,596],[475,661],[360,661]]},
+ {room:'living',name:'냉장고 자리',pts:[[360,596],[475,596],[475,661],[360,661]],spot:true},
  {room:'living',name:'싱크대',pts:[[359,596],[133,596],[133,779],[198,779],[198,661],[359,661]]},
- {room:'living',name:'틈새 수납',pts:[[237,609],[317,609],[317,649],[237,649]]},
- {room:'living',name:'신발장 · 가벽',pts:[[603,806],[704,806],[704,836],[603,836]]},
+ {room:'living',name:'싱크대',pts:[[237,609],[317,609],[317,649],[237,649]],bowl:true},
+ {room:'living',name:'신발장 자리',pts:[[603,806],[704,806],[704,836],[603,836]],spot:true},
  {room:'hall',  name:'수납',pts:[[480,488],[565,488],[565,595],[480,595]]},
  {room:'kbal',  name:'세탁기',pts:[[51,820],[127,820],[127,900],[51,900]]},
 ];
@@ -273,6 +273,15 @@ function corners(it,inset){
   return [[-w,-d],[w,-d],[w,d],[-w,d]].map(([x,y])=>[it.x+x*c-y*s, it.y+x*s+y*c]);
 }
 /* 딱 붙였을 때(거리 0) 는 ‘밖’ 으로 보지 않도록 살짝 안쪽에서 판정 */
+/* 거실↔현관처럼 벽 없이 트인 공간은 함께 ‘안’으로 본다 */
+function insideRoom(poly,r,eps){
+  const polys=[r.pts].concat((r.joins||[]).map(id=>RM(id).pts));
+  const cx=poly.reduce((a,p)=>a+p[0],0)/poly.length, cy=poly.reduce((a,p)=>a+p[1],0)/poly.length;
+  return poly.every(p=>{
+    const L=Math.hypot(cx-p[0],cy-p[1])||1, q=[p[0]+(cx-p[0])/L*eps, p[1]+(cy-p[1])/L*eps];
+    return polys.some(pp=>pip(q,pp));
+  });
+}
 function insidePoly(poly,room,eps){
   const cx=poly.reduce((a,p)=>a+p[0],0)/poly.length, cy=poly.reduce((a,p)=>a+p[1],0)/poly.length;
   return poly.every(p=>{
@@ -333,7 +342,7 @@ function roomSegs(rid){
   const out=[],push=poly=>{for(let i=0;i<poly.length;i++)out.push([poly[i],poly[(i+1)%poly.length]]);};
   push(RM(rid).pts);
   itemsIn(rid).forEach(it=>push(corners(it)));
-  if(showFix)FIX.filter(f=>f.room===rid).forEach(f=>push(f.pts));
+  if(showFix)FIX.filter(f=>f.room===rid&&!f.spot).forEach(f=>push(f.pts));
   return out;
 }
 function rayDist(p,dx,dy,segs){
@@ -366,7 +375,7 @@ function freeGrid(rid,step){
   const r=RM(rid),b=bbox(r.pts);
   const cols=Math.ceil((b.x1-b.x0)/step),rows=Math.ceil((b.y1-b.y0)/step);
   const items=itemsIn(rid).map(it=>corners(it,-0.6));
-  const fx=showFix?FIX.filter(f=>f.room===rid).map(f=>f.pts):[];
+  const fx=showFix?FIX.filter(f=>f.room===rid&&!f.spot).map(f=>f.pts):[];
   const g=[];
   for(let j=0;j<rows;j++){
     const row=[];
@@ -562,19 +571,19 @@ function itemsIn(rid){return S.items.filter(i=>i.room===rid);}
 function warnsFor(it){
   const r=RM(it.room);if(!r)return[];
   const W=[],C=corners(it);
-  if(!insidePoly(C,r.pts,1.2))W.push(['b','벽 넘음']);
+  if(!insideRoom(C,r,1.2))W.push(['b','벽 넘음']);
   for(const o of itemsIn(it.room)) if(o.id!==it.id&&overlap(C,corners(o)))W.push(['b','‘'+o.name+'’과 겹침']);
-  for(const f of FIX.filter(f=>f.room===it.room)) if(overlap(C,f.pts))W.push(['b',f.name+' 자리']);
+  for(const f of FIX.filter(f=>f.room===it.room&&!f.spot)) if(overlap(C,f.pts))W.push(['b',f.name+' 자리']);
   for(const o of OPEN.filter(o=>o.room===it.room&&o.kind==='swing'))
     if(overlap(C,swingPoly(o)))W.push(['w',o.name+' 열림 막음']);
   for(const o of OPEN.filter(o=>o.room===it.room&&(o.kind==='win'||o.kind==='slide')))
     if(it.h>(o.sill||70)&&overlap(C,winBand(o)))W.push(['w',o.name+' 가림']);
   const fz=frontZone(it);
   if(fz){
-    if(!insidePoly(fz,r.pts,1.2))W.push(['w','앞 여유 '+UU(it.front)+' 부족']);
+    if(!insideRoom(fz,r,1.2))W.push(['w','앞 여유 '+UU(it.front)+' 부족']);
     for(const o of itemsIn(it.room)) if(o.id!==it.id&&overlap(fz,corners(o)))W.push(['w','앞 여유에 ‘'+o.name+'’']);
   }
-  return W;
+  const seen={};return W.filter(w=>seen[w[1]]?false:(seen[w[1]]=1));
 }
 function narrowest(rid){
   const list=itemsIn(rid).map(corners),r=RM(rid);let m=1e9,n=0;
@@ -710,8 +719,21 @@ function renderRoom(){
   s+='</g>';
   s+='<polygon points="'+P(r.pts)+'" fill="var('+r.tone+')" fill-opacity=".08" stroke="var(--wall)" stroke-width="'+(f*6)+'" stroke-linejoin="round"/>';
   if(showFix)for(const x of FIX.filter(x=>x.room===curRoom)){
+    const bb=bbox(x.pts);
+    if(x.bowl){            // 싱크대 개수대 표시 (글자 없이 모양만)
+      const pd=Math.min(6,(bb.x1-bb.x0)*.12);
+      s+='<rect x="'+(bb.x0+pd)+'" y="'+(bb.y0+pd)+'" width="'+(bb.x1-bb.x0-pd*2)+'" height="'+(bb.y1-bb.y0-pd*2)+
+         '" rx="'+(pd*1.4)+'" fill="var(--plan)" fill-opacity=".7" stroke="var(--ink-3)" stroke-width="'+(f*1.4)+'"/>';
+      s+='<circle cx="'+((bb.x0+bb.x1)/2)+'" cy="'+((bb.y0+bb.y1)/2)+'" r="'+(f*2.4)+'" fill="var(--ink-3)"/>';
+      continue;
+    }
+    if(x.spot){            // 가구를 놓을 자리 (막지 않음)
+      s+='<polygon points="'+P(x.pts)+'" fill="var(--act)" fill-opacity=".06" stroke="var(--act)" stroke-width="'+(f*1.6)+'" stroke-dasharray="'+(f*6)+' '+(f*5)+'"/>';
+      s+=T((bb.x0+bb.x1)/2,(bb.y0+bb.y1)/2+f*3,x.name,f*10,'var(--act)',500);
+      continue;
+    }
     s+='<polygon points="'+P(x.pts)+'" fill="var(--ink-3)" fill-opacity=".12" stroke="var(--ink-3)" stroke-width="'+(f*1.6)+'" stroke-dasharray="'+(f*6)+' '+(f*5)+'"/>';
-    const bb=bbox(x.pts);s+=T((bb.x0+bb.x1)/2,(bb.y0+bb.y1)/2,x.name,f*10,'var(--ink-3)',400);
+    s+=T((bb.x0+bb.x1)/2,(bb.y0+bb.y1)/2,x.name,f*10,'var(--ink-3)',400);
   }
   s+=drawOpenings(curRoom,f);
   for(const o of OPEN.filter(o=>o.room===curRoom)){
