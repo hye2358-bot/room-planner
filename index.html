@@ -155,7 +155,7 @@ const ROOMS=[
  {id:'living',name:'거실 · 부엌',tone:'--t-blue',h:235,joins:['entry'],
   pts:[[132,596],[564,596],[564,487],[704,487],[704,816],[603,816],[603,900],[132,900]]},
  {id:'small2',name:'작은방',tone:'--t-sage',h:235,
-  pts:[[331,376],[565,376],[565,130],[348,130],[331,168]]},
+  pts:[[330,376],[565,376],[565,130],[348,130],[330,168]]},
  {id:'baby',name:'막내방',tone:'--t-sage',h:235,
   pts:[[248,376],[475,376],[475,595],[248,595]]},
  {id:'bath',name:'화장실',tone:'--t-slate',h:225,
@@ -175,7 +175,7 @@ const RM=id=>ROOMS.find(r=>r.id===id);
 
 /* 문·창 : swing = 경첩/문짝, slide = 미닫이·창 */
 const OPEN=[
- {room:'small2',kind:'swing',name:'방문',w:84,hinge:[565,376],jamb:[481,376],leaf:[565,292]},
+ {room:'small2',kind:'swing',name:'방문',w:90,hinge:[565,376],jamb:[475,376],leaf:[565,286]},
  {room:'small2',kind:'slide',name:'베란다문',w:148,a:[382,130],b:[530,130]},
  {room:'baby',  kind:'swing',name:'방문',w:84,hinge:[475,595],jamb:[475,511],leaf:[391,595]},
  {room:'baby',  kind:'win',  name:'창문',w:149,a:[248,411],b:[248,560]},
