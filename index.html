@@ -151,7 +151,7 @@ kbd{font-family:'IBM Plex Mono',monospace;font-size:.76rem;border:1px solid var(
 /* ═══════════════ 도면 데이터 (실측 SVG에서 추출, 단위 cm) ═══════════════ */
 const ROOMS=[
  {id:'master',name:'안방',tone:'--t-lilac',h:235,
-  pts:[[22,1240],[341,1240],[341,900],[46,900],[22,946]]},
+  pts:[[21,1240],[341,1240],[341,900],[41,900],[21,946]]},
  {id:'living',name:'거실 · 부엌',tone:'--t-blue',h:235,joins:['entry'],
   pts:[[132,596],[564,596],[564,487],[704,487],[704,816],[603,816],[603,900],[132,900]]},
  {id:'small2',name:'작은방',tone:'--t-sage',h:235,
@@ -169,7 +169,7 @@ const ROOMS=[
  {id:'sbal',name:'작은방 베란다',tone:'--t-stone',h:225,
   pts:[[350,130],[565,130],[498,50],[414,50]]},
  {id:'mbal',name:'안방 베란다',tone:'--t-stone',h:225,
-  pts:[[-108,946],[22,946],[22,1240],[-108,1240]]},
+  pts:[[-108,946],[21,946],[21,1240],[-108,1240]]},
 ];
 const RM=id=>ROOMS.find(r=>r.id===id);
 
@@ -180,8 +180,8 @@ const OPEN=[
  {room:'baby',  kind:'swing',name:'방문',w:84,hinge:[475,595],jamb:[475,511],leaf:[391,595]},
  {room:'baby',  kind:'win',  name:'창문',w:149,a:[248,411],b:[248,560]},
  {room:'bath',  kind:'swing',name:'문',w:73,hinge:[565,487],jamb:[565,414],leaf:[638,487]},
- {room:'master',kind:'swing',name:'방문',w:93,hinge:[321,900],jamb:[228,900],leaf:[321,993]},
- {room:'master',kind:'slide',name:'베란다문',w:190,a:[22,990],b:[22,1180]},
+ {room:'master',kind:'swing',name:'방문',w:100,hinge:[341,900],jamb:[241,900],leaf:[341,1000]},
+ {room:'master',kind:'slide',name:'베란다문',w:190,a:[21,990],b:[21,1180]},
  {room:'living',kind:'win',  name:'거실창',w:224,a:[705,580],b:[705,804],sill:80},
  {room:'living',kind:'slide',name:'베란다 개구부',w:73,a:[133,827],b:[133,900]},
  {room:'entry', kind:'out',  name:'현관문(밖여닫이)',w:90,a:[615,900],b:[705,900]},
